@@ -39,7 +39,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 export const getOneUser = async (req: Request, res: Response) => {
   const userId = req.params.userId;
   try{
-    const user = await UserModel.findById(userId);
+    const user = await UserModel.findById(userId).populate({path:'moviesFav', select:'title'}); //TOFIX solo devuelve los id's, puede ser por tener enlazada dentro otra petición???
 
   return res.status(200).json(user);
 
@@ -88,7 +88,7 @@ export const toggleFavoritesMovies = async (req: Request, res: Response) => {
       return res.status(404).json({error: 'User not found'});
     }
 
-    const movieInFavorites = user.movies.includes(movieObjectId);
+    const movieInFavorites = user.moviesFav.includes(movieObjectId);
 
     const userToUpdate = await UserModel.findByIdAndUpdate(userId,
       movieInFavorites ? {$pull: {movies: movieId}} : {$addToSet: {movies: movieId}} ,

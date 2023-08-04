@@ -39,7 +39,7 @@ export const getAllMovies = async (req: Request, res: Response) => {
 export const getOneMovie = async (req: Request, res: Response) => {
   const movieId = req.params.movieId;
   try{
-    const movie = await MoviesModel.findById(movieId);
+    const movie = await MoviesModel.findById(movieId).populate('genre');
 
   return res.status(200).json(movie);
 

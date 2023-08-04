@@ -3,7 +3,7 @@ import {Document, Schema, Types, model} from 'mongoose'
 interface IUserDocument extends Document {
     name: string,
     email: string,
-    movies: Types.ObjectId[],
+    moviesFav: Types.ObjectId[],
     password: string,
     createdAt: Date,
     updateAt: Date
@@ -21,8 +21,8 @@ const UserSchema = new Schema<IUserDocument> ({
         unique: true,
         trim: true
     },
-    movies: {
-        type: [{type: Schema.Types.ObjectId, ref: 'Movies'}],
+    moviesFav: {
+        type: [{type: Schema.Types.ObjectId, ref: 'movie'}],
         required: [true, 'Movies input is required'],
     },
     password: {
@@ -37,6 +37,6 @@ const UserSchema = new Schema<IUserDocument> ({
     }
 );
 
-const UserModel = model<IUserDocument>('User', UserSchema);
+const UserModel = model<IUserDocument>('user', UserSchema);
 
 export default UserModel;

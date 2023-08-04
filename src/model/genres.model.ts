@@ -20,6 +20,6 @@ const GenreSchema = new Schema<IGenreDocument> ({
     }
 );
 
-const GenreModel = model<IGenreDocument>('genres', GenreSchema);
+const GenreModel = model<IGenreDocument>('genre', GenreSchema);
 
 export default GenreModel;

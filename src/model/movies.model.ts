@@ -27,7 +27,7 @@ const MoviesSchema = new Schema<IMoviesDocument> ({
         trim: true
     },
     genre: {
-        type: [{type: Schema.Types.ObjectId, ref: 'genres' }],
+        type: [{type: Schema.Types.ObjectId, ref: 'genre' }],
         trim: true
     }
     },
@@ -37,6 +37,6 @@ const MoviesSchema = new Schema<IMoviesDocument> ({
     }
 );
 
-const MoviesModel = model<IMoviesDocument>('Movies', MoviesSchema); //TOFIX: Ojo que no se debería meter mayusculas. Al pasarlo a mongodb quita mayusculas y añade s al final.
+const MoviesModel = model<IMoviesDocument>('movie', MoviesSchema);
 
 export default MoviesModel;
