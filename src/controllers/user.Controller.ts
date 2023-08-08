@@ -4,15 +4,15 @@ import { Types } from 'mongoose';
 
 
 export const createUser = async (req: Request, res: Response) => {
-  const {name, email, movies ,password} = req.body;
+  const {name, email, moviesFav ,password} = req.body;
     try{
-      if(!name || !email || !movies || !password){
+      if(!name || !email || !moviesFav || !password){
         return res.status(400).json({error:'Missing required input'})
       }
       const newUser = await UserModel.create({
         name,
         email,
-        movies,
+        moviesFav,
         password
       })
 
@@ -39,7 +39,13 @@ export const getAllUsers = async (req: Request, res: Response) => {
 export const getOneUser = async (req: Request, res: Response) => {
   const userId = req.params.userId;
   try{
-    const user = await UserModel.findById(userId).populate({path:'moviesFav', select:'title'}); //TOFIX solo devuelve los id's, puede ser por tener enlazada dentro otra petición???
+    const user = await UserModel.findById(userId).populate({
+      path:'moviesFav',
+        populate:{
+          path: 'genre',
+          select: '_id name'
+        }
+    }); //TOFIX solo devuelve los id's, puede ser por tener enlazada dentro otra petición???
 
   return res.status(200).json(user);
 
@@ -52,14 +58,14 @@ export const getOneUser = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
 
   const userId = req.params.userId;
-  const {name, email, movies, password} = req.body;
+  const {name, email, moviesFav, password} = req.body;
 
   try{
-    if (!name || !email || !movies || !password){
+    if (!name || !email || !moviesFav || !password){
       return res.status(400).json({ error: 'Missing required input' });
     }
 
-    const userToUpdate = await UserModel.findByIdAndUpdate(userId, {name, email, movies, password}, {new: true})
+    const userToUpdate = await UserModel.findByIdAndUpdate(userId, {name, email, moviesFav, password}, {new: true})
     if (!userToUpdate){
       return res.status(404).json({error: 'User not found'});
     }
@@ -91,7 +97,7 @@ export const toggleFavoritesMovies = async (req: Request, res: Response) => {
     const movieInFavorites = user.moviesFav.includes(movieObjectId);
 
     const userToUpdate = await UserModel.findByIdAndUpdate(userId,
-      movieInFavorites ? {$pull: {movies: movieId}} : {$addToSet: {movies: movieId}} ,
+      movieInFavorites ? {$pull: {moviesFav: movieId}} : {$addToSet: {moviesFav: movieId}} ,
       {new: true}
     )
   

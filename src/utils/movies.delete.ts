@@ -8,6 +8,6 @@ export const moviesDelete = async (incomingMovieId: string) => {
         //TOFIX: No es necesario dar alerta de que nadie tiene la pelicula?
     }
 
-    const usersWithMovie = await UserModel.updateMany ({movies: movieId},{$pull:{movies: movieId}})
+    const usersWithMovie = await UserModel.updateMany ({moviesFav: movieId},{$pull:{moviesFav: movieId}})
 
 }

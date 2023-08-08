@@ -13,12 +13,13 @@ const MoviesSchema = new Schema<IMoviesDocument> ({
     title: {
         type: String,
         required: [true, 'Title input is required'],
+        unique: true,
         trim: true
     },
     poster_image:{
         type: String,
         required: [true, 'Poster image input is required'],
-        unique: true,
+        // unique: true,
         trim: true
     },
     score: {
