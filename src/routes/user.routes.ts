@@ -1,11 +1,13 @@
-import {Router} from 'express';
+import { Router } from 'express';
 import {
   createUser,
   getAllUsers,
   getOneUser,
   updateUser,
-  deleteUser, 
-  toggleFavoritesMovies} from '../controllers/user.Controller';
+  deleteUser,
+} from '../controllers/user.Controller';
+
+// toggleFavoritesMovies
 
 const userRoutes = Router();
 
@@ -14,7 +16,7 @@ userRoutes
   .get('/', getAllUsers)
   .get('/:userId', getOneUser)
   .put('/:userId', updateUser)
-  .patch('/:userId/:movieId', toggleFavoritesMovies)
+  // .patch('/:userId/:movieId', toggleFavoritesMovies)
   .delete('/:userId', deleteUser);
 
 export default userRoutes;

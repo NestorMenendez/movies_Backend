@@ -4,12 +4,13 @@ import {
     getAllMovies,
     getOneMovie,
     updateMovie,
-    deleteMovie } from '../controllers/movies.Controller';
+    deleteMovie
+} from '../controllers/movies.Controller';
 
 const moviesRoutes = express.Router();
 
 moviesRoutes
-    .post('/', createMovie)
+    .post('/:userId', createMovie)
     .get('/', getAllMovies)
     .get('/:movieId', getOneMovie)
     .put('/:movieId', updateMovie)

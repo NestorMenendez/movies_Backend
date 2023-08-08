@@ -8,14 +8,14 @@ type TConfig = {
 
 type EnvironmentConfig = {
   app: AppConfig;
-  db: MongoDBConfig;
+  // db: MongoDBConfig;
 };
 
 type AppConfig = {
   PORT: string | number;
 };
 type MongoDBConfig = {
-  URI: string;
+  // URI: string;
 };
 
 if (process.env.NODE_ENV === 'production') {
@@ -31,17 +31,17 @@ const CONFIG: TConfig = {
     app: {
       PORT: process.env.PORT || 4001,
     },
-    db: {
-      URI: process.env.MONGO_DB_URI || ''
-    }
+    // db: {
+    //   URI: process.env.MONGO_DB_URI || ''
+    // }
   },
   production: {
     app: {
       PORT: process.env.PORT || 4002,
     },
-    db: {
-      URI: process.env.MONGO_DB_URI || ''
-    }
+    // db: {
+    //   URI: process.env.MONGO_DB_URI || ''
+    // }
   },
 };
 
