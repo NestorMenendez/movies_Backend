@@ -1,40 +1,44 @@
 import { Request, Response } from 'express';
 import prisma from '../db/clientPrisma';
 import { uploadImage } from '../utils/cloudinary'
+import fs from 'fs-extra';
 
 export const createMovie = async (req: Request, res: Response) => {
 
   const { userId } = req.params;
+  let { title, genres, score } = req.body;
 
   //Customization of incoming data to db model
-  let { title } = req.body;
-  if (typeof title !== 'string') {
-    title = title.toString()
-  }
-  let { genres } = req.body;
-  if (!Array.isArray(genres)) {
-    genres = [genres]
-  }
-  let { score } = req.body;
-  if (typeof score !== 'number') {
-    score = Number(score)
-  }
+  if (typeof title !== 'string') title = title.toString()
+  if (!Array.isArray(genres)) genres = [genres]
+  if (typeof score !== 'number') score = Number(score)
 
+  let uploadedPublicId = '';
+  let uploadedSecureUrl = '';
 
   try {
     if (!title || !score || !genres) {
       return res.status(400).json({ error: 'Missing required input' });
     }
-
     if (!req.files || !req.files.image) {
       return res.status(400).json({ error: 'Image is missing' });
     }
+
     const imageVerification = req.files.image
 
     if (imageVerification) {
       if ("tempFilePath" in imageVerification) {
-        const uploadedImage = await uploadImage(imageVerification.tempFilePath);
-        console.log(uploadImage)
+        try {
+          const uploadedImage = await uploadImage(imageVerification.tempFilePath);
+
+          uploadedPublicId = uploadedImage.public_id;
+          uploadedSecureUrl = uploadedImage.secure_url;
+
+          await fs.unlink(imageVerification.tempFilePath);
+
+        } catch (error) {
+          return res.status(500).json({ error: 'Error uploading image to Cloudinary' });
+        }
       }
     }
 
@@ -45,11 +49,17 @@ export const createMovie = async (req: Request, res: Response) => {
         genres: {
           connect: genres.map((genre: string) => ({ id: genre })),
         },
-        Users: {
+        users: {
           connect: {
             id: userId,
           },
         },
+        image: {
+          create: {
+            public_id: uploadedPublicId,
+            secure_url: uploadedSecureUrl
+          }
+        }
       },
       include: {
         genres: {
@@ -57,12 +67,17 @@ export const createMovie = async (req: Request, res: Response) => {
             name: true,
           },
         },
+        image: {
+          select: {
+            public_id: true,
+            secure_url: true
+          }
+        }
       },
     });
 
-    return res.status(201).send(newMovie);
+    return res.status(200).send(newMovie);
   } catch (error) {
-    console.log(error)
     return res.status(500).json({ error: 'Error creating movie' });
   }
 };

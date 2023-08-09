@@ -10,7 +10,6 @@ cloudinary.config({
 
 
 export async function uploadImage(filePath: string) {
-    console.log("entra en upload")
     return await cloudinary.uploader.upload(filePath, {
         folder: 'Movies'
     })

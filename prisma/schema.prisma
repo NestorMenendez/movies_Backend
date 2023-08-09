@@ -32,13 +32,22 @@ model Movies {
   genres    Genres[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  Users     Users?   @relation(fields: [usersId], references: [id])
+  users     Users?   @relation(fields: [usersId], references: [id])
   usersId   String?  @db.ObjectId
+  image     Images?  @relation(fields: [imagesId], references: [id])
+  imagesId  String?  @db.ObjectId
 }
 
 model Genres {
   id       String  @id @default(auto()) @map("_id") @db.ObjectId
   name     String  @unique
-  Movies   Movies? @relation(fields: [moviesId], references: [id])
+  movies   Movies? @relation(fields: [moviesId], references: [id])
   moviesId String? @db.ObjectId
+}
+
+model Images {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  public_id  String
+  secure_url String
+  movies     Movies[]
 }
