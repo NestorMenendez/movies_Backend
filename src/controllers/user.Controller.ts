@@ -44,9 +44,16 @@ export const getOneUser = async (req: Request, res: Response) => {
         id: userId
       },
       include: {
-        moviesFav: true
+        moviesFav: {
+          include: {
+            genres: {
+              select: { name: true }
+            }
+          }
+        }
       }
-    });
+    }
+    );
 
     return res.status(200).json(user);
 

@@ -29,7 +29,7 @@ model Movies {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   title     String
   score     Float
-  genre     Genres[]
+  genres    Genres[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   Users     Users?   @relation(fields: [usersId], references: [id])

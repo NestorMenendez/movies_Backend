@@ -1,31 +1,68 @@
 import { Request, Response } from 'express';
 import prisma from '../db/clientPrisma';
-
+import { uploadImage } from '../utils/cloudinary'
 
 export const createMovie = async (req: Request, res: Response) => {
 
-  const { title, score } = req.body;
-  const { userId } = req.params
+  const { userId } = req.params;
+
+  //Customization of incoming data to db model
+  let { title } = req.body;
+  if (typeof title !== 'string') {
+    title = title.toString()
+  }
+  let { genres } = req.body;
+  if (!Array.isArray(genres)) {
+    genres = [genres]
+  }
+  let { score } = req.body;
+  if (typeof score !== 'number') {
+    score = Number(score)
+  }
+
 
   try {
-    if (!title || !score) {
-      return res.status(400).json({ error: 'Missing required input' })
+    if (!title || !score || !genres) {
+      return res.status(400).json({ error: 'Missing required input' });
     }
+
+    if (!req.files || !req.files.image) {
+      return res.status(400).json({ error: 'Image is missing' });
+    }
+    const imageVerification = req.files.image
+
+    if (imageVerification) {
+      if ("tempFilePath" in imageVerification) {
+        const uploadedImage = await uploadImage(imageVerification.tempFilePath);
+        console.log(uploadImage)
+      }
+    }
+
     const newMovie = await prisma.movies.create({
       data: {
         title,
         score,
+        genres: {
+          connect: genres.map((genre: string) => ({ id: genre })),
+        },
         Users: {
           connect: {
-            id: userId
-          }
-        }
-      }
-    })
+            id: userId,
+          },
+        },
+      },
+      include: {
+        genres: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
 
     return res.status(201).send(newMovie);
-
   } catch (error) {
+    console.log(error)
     return res.status(500).json({ error: 'Error creating movie' });
   }
 };
@@ -63,10 +100,10 @@ export const getOneMovie = async (req: Request, res: Response) => {
 export const updateMovie = async (req: Request, res: Response) => {
 
   const movieId = req.params.movieId;
-  const { title, poster_image, score, genre } = req.body;
+  const { title, score, genres } = req.body;
 
   try {
-    if (!title || !poster_image || !score || !genre) {
+    if (!title || !score || !genres) {
       return res.status(400).json({ error: 'Missing required input' });
     }
 
@@ -77,7 +114,7 @@ export const updateMovie = async (req: Request, res: Response) => {
       data: {
         title,
         score,
-        genre,
+        genres
       }
     })
     if (!movieToUpdate) {
