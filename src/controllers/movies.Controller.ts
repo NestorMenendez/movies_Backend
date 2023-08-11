@@ -9,7 +9,7 @@ export const createMovie = async (req: Request, res: Response) => {
   let { title, genres, score } = req.body;
 
   //Customization of incoming data to db model
-  if (typeof title !== 'string') title = title.toString()
+  if (typeof title !== 'string') title = title.toString() //TOFIX crear función que reciba tipos de variable y los convierta.
   if (!Array.isArray(genres)) genres = [genres]
   if (typeof score !== 'number') score = Number(score)
 
@@ -25,21 +25,16 @@ export const createMovie = async (req: Request, res: Response) => {
     }
 
     const imageVerification = req.files.image
+    console.log(imageVerification)
+    if ("tempFilePath" in imageVerification) {
 
-    if (imageVerification) {
-      if ("tempFilePath" in imageVerification) {
-        try {
-          const uploadedImage = await uploadImage(imageVerification.tempFilePath);
+      const uploadedImage = await uploadImage(imageVerification.tempFilePath);
 
-          uploadedPublicId = uploadedImage.public_id;
-          uploadedSecureUrl = uploadedImage.secure_url;
+      uploadedPublicId = uploadedImage.public_id;
+      uploadedSecureUrl = uploadedImage.secure_url;
 
-          await fs.unlink(imageVerification.tempFilePath);
+      await fs.unlink(imageVerification.tempFilePath);
 
-        } catch (error) {
-          return res.status(500).json({ error: 'Error uploading image to Cloudinary' });
-        }
-      }
     }
 
     const newMovie = await prisma.movies.create({
@@ -85,7 +80,16 @@ export const createMovie = async (req: Request, res: Response) => {
 
 export const getAllMovies = async (req: Request, res: Response) => {
   try {
-    const movies = await prisma.movies.findMany();
+    const movies = await prisma.movies.findMany({
+      select: {
+        id: true,
+        title: true,
+        score: true,
+        createdAt: true,
+        updatedAt: true,
+        imagesId: true
+      }
+    });
 
     return res.status(200).json(movies);
 

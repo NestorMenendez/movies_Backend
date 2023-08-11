@@ -1,30 +1,24 @@
 import dotenv from 'dotenv';
+import { APP_ORIGIN, AUTH_AUDIENCE, AUTH_ISSUER } from './authReferences';
+import { getEnvVar } from '../utils/getEnvVar'
 
-// console.log(process.env)
+type TConfig = { [key: string]: EnvironmentConfig };
 
-type TConfig = {
-  [key: string]: EnvironmentConfig;
-};
+type EnvironmentConfig = { app: AppConfig; db: MongoDBConfig; auth: AuthConfig };
 
-type EnvironmentConfig = {
-  app: AppConfig;
-  db: MongoDBConfig;
-};
-
-type AppConfig = {
-  PORT: string | number;
-};
-type MongoDBConfig = {
-  URI: string;
-};
-
-if (process.env.NODE_ENV === 'production') {
-  dotenv.config({ path: '.env.production' });
-} else {
-  dotenv.config({ path: '.env.development' });
+type AppConfig = { PORT: string | number };
+type MongoDBConfig = { URI: string };
+type AuthConfig = {
+  origin: string;
+  audience: string;
+  issuer: string;
 }
 
+if (process.env.NODE_ENV === 'production') dotenv.config({ path: '.env.production' });
+else dotenv.config({ path: '.env.development' });
+
 const ENV = process.env.NODE_ENV ?? 'development';
+
 
 const CONFIG: TConfig = {
   development: {
@@ -33,14 +27,25 @@ const CONFIG: TConfig = {
     },
     db: {
       URI: process.env.MONGO_DB_URI || ''
+    },
+    auth: {
+      origin: getEnvVar(APP_ORIGIN),
+      audience: getEnvVar(AUTH_AUDIENCE),
+      issuer: getEnvVar(AUTH_ISSUER),
     }
   },
+
   production: {
     app: {
       PORT: process.env.PORT || 4002,
     },
     db: {
       URI: process.env.MONGO_DB_URI || ''
+    },
+    auth: {
+      origin: getEnvVar(APP_ORIGIN),
+      audience: getEnvVar(AUTH_AUDIENCE),
+      issuer: getEnvVar(AUTH_ISSUER),
     }
   },
 };
@@ -48,10 +53,5 @@ const CONFIG: TConfig = {
 export const CLOUDINARY_CLOUD_NAME = process.env['CLOUDINARY_NAME']
 export const CLOUDINARY_API_KEY = process.env['CLOUDINARY_API_KEY']
 export const CLOUDINARY_API_SECRET = process.env['CLOUDINARY_API_SECRET']
-// console.log(CLOUDINARY_CLOUD_NAME)
-// console.log(CLOUDINARY_API_KEY)
-// console.log(CLOUDINARY_API_SECRET)
-// console.log(process.env.MONGO_DB_URI)
-
 
 export default CONFIG[ENV];
