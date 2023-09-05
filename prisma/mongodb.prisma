@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/mongodb_client"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGO_DB_URI")
+}
+
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+// }
+
+model Users {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String?
+  email     String   @unique
+  password  String?
+  moviesFav Movies[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// model UsersRelatedToMovies {
+//   id        String  @id @default(auto()) @map("_id") @db.ObjectId
+//   userId    String
+//   movieId   String
+//   UsersRel  Users?  @relation(fields: [usersId], references: [id])
+//   usersId   String? @db.ObjectId
+//   MoviesRel Movies? @relation(fields: [moviesId], references: [id])
+//   moviesId  String? @db.ObjectId
+// }
+
+model Movies {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  score     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  image     Images?  @relation(fields: [imagesId], references: [id])
+  imagesId  String?  @db.ObjectId
+  users     Users?   @relation(fields: [usersId], references: [id])
+  usersId   String?  @db.ObjectId
+  // MoviesRelatedToGenres MoviesRelatedToGenres[]
+  genres    Genres?  @relation(fields: [genresId], references: [id])
+  genresId  String?  @db.ObjectId
+}
+
+// model MoviesRelatedToGenres {
+//   id       String @id @default(auto()) @map("_id") @db.ObjectId
+//   movieRel Movies @relation(fields: [movieId], references: [id])
+//   movieId  String @db.ObjectId
+//   genreRel Genres @relation(fields: [genreId], references: [id])
+//   genreId  String @db.ObjectId
+// }
+
+model Genres {
+  id     String   @id @default(auto()) @map("_id") @db.ObjectId
+  name   String   @unique
+  movies Movies[]
+}
+
+model Images {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  public_id  String
+  secure_url String
+  movies     Movies[]
+}
