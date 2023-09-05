@@ -22,8 +22,8 @@ app.use(fileUpload({
 }));
 
 app.use('/moviesPublic', moviesPublicRoutes);
-app.use('/movies', moviesRoutes);
-app.use('/user', userRoutes);
+app.use('/movies', checkJwtMiddleware, moviesRoutes);
+app.use('/user', checkJwtMiddleware, userRoutes);
 app.use('/genres', genresRoutes);
 
 export default app;
