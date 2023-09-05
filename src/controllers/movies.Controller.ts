@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
-import prisma from '../db/clientPrisma';
+import { prismaClient } from '../db/clientPrisma';
 import { uploadImage } from '../utils/cloudinary'
 import fs from 'fs-extra';
 import { getOneUserByMail } from './user.Controller';
+import { dbTypeConverter } from '../utils/dbTypeConverter';
 
 export const createMovie = async (req: Request, res: Response) => {
 
@@ -43,18 +44,18 @@ export const createMovie = async (req: Request, res: Response) => {
 
     }
 
-    const newMovie = await prisma.movies.create({
+    const newMovie = await prismaClient.movies.create({
       data: {
         title,
         score,
         genres: {
           connect: {
-            id: genres
+            id: dbTypeConverter(genres),
           },
         },
         users: {
           connect: {
-            id: userId,
+            id: dbTypeConverter(userId),
           },
         },
         image: {
@@ -75,12 +76,14 @@ export const createMovie = async (req: Request, res: Response) => {
       },
     });
 
-    const user = await prisma.users.update({
-      where: { id: userId },
+    const user = await prismaClient.users.update({
+      where: {
+        id: dbTypeConverter(userId)
+      },
       data: {
         moviesFav: {
           connect: {
-            id: newMovie.id,
+            id: dbTypeConverter(newMovie.id),
           },
         },
       },
@@ -99,9 +102,9 @@ export const getAllMoviesByUser = async (req: Request, res: Response) => {
   const userId = await getOneUserByMail(userEmail);
 
   try {
-    const movies = await prisma.users.findUnique({
+    const movies = await prismaClient.users.findUnique({
       where: {
-        id: userId
+        id: dbTypeConverter(userId)
       },
       include: {
         moviesFav: {
@@ -135,9 +138,9 @@ export const getAllMoviesByUser = async (req: Request, res: Response) => {
 export const getOneMovie = async (req: Request, res: Response) => {
   const movieId = req.params.movieId;
   try {
-    const movie = await prisma.movies.findUnique({
+    const movie = await prismaClient.movies.findUnique({
       where: {
-        id: movieId
+        id: dbTypeConverter(movieId)
       },
       include: {
         genres: {
@@ -182,16 +185,16 @@ export const updateMovie = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Missing required input' });
     }
 
-    const movieToUpdate = await prisma.movies.update({
+    const movieToUpdate = await prismaClient.movies.update({
       where: {
-        id: movieId
+        id: dbTypeConverter(movieId)
       },
       data: {
         title,
         score,
         genres: {
           connect: {
-            id: genres
+            id: dbTypeConverter(genres)
           },
         }
       }
@@ -213,9 +216,9 @@ export const deleteMovie = async (req: Request, res: Response) => {
 
   try {
 
-    const movieToDelete = await prisma.movies.delete({
+    const movieToDelete = await prismaClient.movies.delete({
       where: {
-        id: movieId
+        id: dbTypeConverter(movieId)
       }
     });
     if (!movieToDelete) {

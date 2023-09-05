@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import prisma from '../db/clientPrisma';
+import { prismaClient } from '../db/clientPrisma';
+import { dbTypeConverter } from '../utils/dbTypeConverter';
 
 
 export const createGenre = async (req: Request, res: Response) => {
@@ -8,7 +9,7 @@ export const createGenre = async (req: Request, res: Response) => {
     if (!name) {
       return res.status(400).json({ error: 'Missing required input' })
     }
-    const newGenre = await prisma.genres.create({
+    const newGenre = await prismaClient.genres.create({
       data: {
         name
       }
@@ -24,7 +25,7 @@ export const createGenre = async (req: Request, res: Response) => {
 
 export const getAllGenres = async (req: Request, res: Response) => {
   try {
-    const genres = await prisma.genres.findMany();
+    const genres = await prismaClient.genres.findMany();
 
     return res.status(200).json(genres);
 
@@ -37,9 +38,9 @@ export const getAllGenres = async (req: Request, res: Response) => {
 export const getOneGenre = async (req: Request, res: Response) => {
   const genreId = req.params.genreId;
   try {
-    const genre = await prisma.genres.findUnique({
+    const genre = await prismaClient.genres.findUnique({
       where: {
-        id: genreId
+        id: dbTypeConverter(genreId),
       }
     });
 
@@ -61,9 +62,9 @@ export const updateGenre = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Missing required input' });
     }
 
-    const genreToUpdate = await prisma.genres.update({
+    const genreToUpdate = await prismaClient.genres.update({
       where: {
-        id: genreId
+        id: dbTypeConverter(genreId)
       },
       data: {
         name: name
@@ -86,9 +87,9 @@ export const deleteGenre = async (req: Request, res: Response) => {
 
   try {
 
-    const genreToDelete = await prisma.genres.delete({
+    const genreToDelete = await prismaClient.genres.delete({
       where: {
-        id: genreId
+        id: dbTypeConverter(genreId),
       }
     });
     if (!genreToDelete) {

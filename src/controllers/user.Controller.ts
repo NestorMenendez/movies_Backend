@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import prisma from '../db/clientPrisma';
+import { prismaClient } from '../db/clientPrisma';
+import { dbTypeConverter } from '../utils/dbTypeConverter';
 
 
 export const createUser = async (req: Request, res: Response) => {
@@ -9,7 +10,7 @@ export const createUser = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Missing required input' })
     }
     const userName = email.split('@')[0];
-    const newUser = await prisma.users.create({
+    const newUser = await prismaClient.users.create({
       data: {
         email,
         name: userName,
@@ -27,7 +28,7 @@ export const createUser = async (req: Request, res: Response) => {
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const users = await prisma.users.findMany();
+    const users = await prismaClient.users.findMany();
 
     return res.status(200).json(users);
 
@@ -40,9 +41,9 @@ export const getAllUsers = async (req: Request, res: Response) => {
 export const getOneUser = async (req: Request, res: Response) => {
   const userId = req.params.userId;
   try {
-    const user = await prisma.users.findUnique({
+    const user = await prismaClient.users.findUnique({
       where: {
-        id: userId
+        id: dbTypeConverter(userId)
       },
       include: {
         moviesFav: {
@@ -67,7 +68,7 @@ export const getOneUserByMailParams = async (req: Request, res: Response) => {
   const userEmail = req.params.userEmail;
 
   try {
-    const user = await prisma.users.findUnique({
+    const user = await prismaClient.users.findUnique({
       where: {
         email: userEmail
       }
@@ -88,7 +89,7 @@ export const getOneUserByMailParams = async (req: Request, res: Response) => {
 export const getOneUserByMail = async (userEmail: string) => {
 
   try {
-    const user = await prisma.users.findUnique({
+    const user = await prismaClient.users.findUnique({
       where: {
         email: userEmail
       }
@@ -113,9 +114,9 @@ export const updateUser = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Missing required input' });
     }
 
-    const userToUpdate = await prisma.users.update({
+    const userToUpdate = await prismaClient.users.update({
       where: {
-        id: userId
+        id: dbTypeConverter(userId)
       },
       data: {
         name,
@@ -139,9 +140,9 @@ export const deleteUser = async (req: Request, res: Response) => {
   const userId = req.params.userId;
 
   try {
-    const userToDelete = await prisma.users.delete({
+    const userToDelete = await prismaClient.users.delete({
       where: {
-        id: userId
+        id: dbTypeConverter(userId)
       }
     });
     if (!userToDelete) {

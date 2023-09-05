@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import prisma from '../db/clientPrisma';
+import { prismaClient } from '../db/clientPrisma';
 import { uploadImage } from '../utils/cloudinary'
 import fs from 'fs-extra';
 import { getOneUserByMail } from './user.Controller';
@@ -7,7 +7,7 @@ import { getOneUserByMail } from './user.Controller';
 
 export const getAllMovies = async (req: Request, res: Response) => {
   try {
-    const movies = await prisma.movies.findMany({
+    const movies = await prismaClient.movies.findMany({
       select: {
         id: true,
         title: true,
