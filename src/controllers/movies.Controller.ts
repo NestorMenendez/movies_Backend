@@ -2,15 +2,22 @@ import { Request, Response } from 'express';
 import prisma from '../db/clientPrisma';
 import { uploadImage } from '../utils/cloudinary'
 import fs from 'fs-extra';
+import { getOneUserByMail } from './user.Controller';
 
 export const createMovie = async (req: Request, res: Response) => {
 
-  const { userId } = req.params;
+  const { userEmail } = req.params;
+  const userId = await getOneUserByMail(userEmail);
+
   let { title, genres, score } = req.body;
+
+  console.log(title)
+  console.log(score)
+  console.log(genres)
 
   //Customization of incoming data to db model
   if (typeof title !== 'string') title = title.toString() //TOFIX crear función que reciba tipos de variable y los convierta.
-  if (!Array.isArray(genres)) genres = [genres]
+  // if (typeof genres === 'string') genres = Array.from(genres.split(','));
   if (typeof score !== 'number') score = Number(score)
 
   let uploadedPublicId = '';
@@ -25,7 +32,6 @@ export const createMovie = async (req: Request, res: Response) => {
     }
 
     const imageVerification = req.files.image
-    console.log(imageVerification)
     if ("tempFilePath" in imageVerification) {
 
       const uploadedImage = await uploadImage(imageVerification.tempFilePath);
@@ -42,7 +48,9 @@ export const createMovie = async (req: Request, res: Response) => {
         title,
         score,
         genres: {
-          connect: genres.map((genre: string) => ({ id: genre })),
+          connect: {
+            id: genres
+          },
         },
         users: {
           connect: {
@@ -57,11 +65,7 @@ export const createMovie = async (req: Request, res: Response) => {
         }
       },
       include: {
-        genres: {
-          select: {
-            name: true,
-          },
-        },
+        genres: true,
         image: {
           select: {
             public_id: true,
@@ -71,28 +75,57 @@ export const createMovie = async (req: Request, res: Response) => {
       },
     });
 
+    const user = await prisma.users.update({
+      where: { id: userId },
+      data: {
+        moviesFav: {
+          connect: {
+            id: newMovie.id,
+          },
+        },
+      },
+    });
+
     return res.status(200).send(newMovie);
-  } catch (error) {
-    return res.status(500).json({ error: 'Error creating movie' });
+  } catch (error: any) {
+    return res.status(500).json({ error: 'Error creating movie', details: error.message });
   }
 };
 
 
-export const getAllMovies = async (req: Request, res: Response) => {
+export const getAllMoviesByUser = async (req: Request, res: Response) => {
+
+  const userEmail = req.params.userEmail;
+  const userId = await getOneUserByMail(userEmail);
+
   try {
-    const movies = await prisma.movies.findMany({
-      select: {
-        id: true,
-        title: true,
-        score: true,
-        createdAt: true,
-        updatedAt: true,
-        imagesId: true
+    const movies = await prisma.users.findUnique({
+      where: {
+        id: userId
+      },
+      include: {
+        moviesFav: {
+          select: {
+            id: true,
+            title: true,
+            score: true,
+            image: {
+              select: {
+                secure_url: true,
+                public_id: true,
+              }
+            },
+            genres: {
+              select: {
+                id: true,
+                name: true,
+              }
+            }
+          }
+        }
       }
     });
-
-    return res.status(200).json(movies);
-
+    return res.status(200).json(movies?.moviesFav);
   } catch (error) {
     return res.status(500).json({ error: 'Error retrieving movies' });
   }
@@ -105,8 +138,17 @@ export const getOneMovie = async (req: Request, res: Response) => {
     const movie = await prisma.movies.findUnique({
       where: {
         id: movieId
+      },
+      include: {
+        genres: {
+          select: {
+            id: true,
+            name: true,
+          }
+        }
       }
-    });
+    }
+    );
 
     return res.status(200).json(movie);
 
@@ -119,7 +161,21 @@ export const getOneMovie = async (req: Request, res: Response) => {
 export const updateMovie = async (req: Request, res: Response) => {
 
   const movieId = req.params.movieId;
-  const { title, score, genres } = req.body;
+
+  let { title, genres, score } = req.body;
+
+  console.log(title)
+  console.log(score)
+  console.log(genres)
+
+  //Customization of incoming data to db model
+  if (typeof title !== 'string') title = title.toString() //TOFIX crear función que reciba tipos de variable y los convierta.
+  // if (typeof genres === 'string') genres = Array.from(genres.split(','));
+  if (typeof score !== 'number') score = Number(score)
+
+  console.log(title)
+  console.log(score)
+  console.log(genres)
 
   try {
     if (!title || !score || !genres) {
@@ -133,7 +189,11 @@ export const updateMovie = async (req: Request, res: Response) => {
       data: {
         title,
         score,
-        genres
+        genres: {
+          connect: {
+            id: genres
+          },
+        }
       }
     })
     if (!movieToUpdate) {

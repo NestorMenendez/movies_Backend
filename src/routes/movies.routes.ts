@@ -1,7 +1,7 @@
 import express from 'express';
 import {
     createMovie,
-    getAllMovies,
+    getAllMoviesByUser,
     getOneMovie,
     updateMovie,
     deleteMovie
@@ -10,10 +10,10 @@ import {
 const moviesRoutes = express.Router();
 
 moviesRoutes
-    .post('/:userId', createMovie)
-    .get('/', getAllMovies)
+    .post('/:userEmail', createMovie)
+    .get('/byUser/:userEmail', getAllMoviesByUser)
     .get('/:movieId', getOneMovie)
-    .put('/:movieId', updateMovie)
+    .patch('/:movieId', updateMovie)
     .delete('/:movieId', deleteMovie);
 
 export default moviesRoutes;

@@ -3,16 +3,17 @@ import prisma from '../db/clientPrisma';
 
 
 export const createUser = async (req: Request, res: Response) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, moviesFav } = req.body;
   try {
-    if (!name || !email || !password) {
+    if (!email) {
       return res.status(400).json({ error: 'Missing required input' })
     }
+    const userName = email.split('@')[0];
     const newUser = await prisma.users.create({
       data: {
-        name,
         email,
-        password
+        name: userName,
+        password: ""
       }
     })
 
@@ -45,20 +46,59 @@ export const getOneUser = async (req: Request, res: Response) => {
       },
       include: {
         moviesFav: {
-          include: {
-            genres: {
-              select: { name: true }
-            }
+          select: {
+            id: true,
+            title: true,
           }
         }
       }
-    }
-    );
+    });
 
     return res.status(200).json(user);
 
   } catch (error) {
     return res.status(500).json({ error: 'Error retrieving user' });
+  }
+};
+
+
+export const getOneUserByMailParams = async (req: Request, res: Response) => {
+
+  const userEmail = req.params.userEmail;
+
+  try {
+    const user = await prisma.users.findUnique({
+      where: {
+        email: userEmail
+      }
+    }
+    );
+    if (user) {
+      return res.status(200).json(user);
+    }
+
+    return res.status(200).json({ email: 'notFound' });
+
+  } catch (error) {
+    throw new Error('Error retrieving user');
+  }
+};
+
+
+export const getOneUserByMail = async (userEmail: string) => {
+
+  try {
+    const user = await prisma.users.findUnique({
+      where: {
+        email: userEmail
+      }
+    }
+    );
+
+    return user?.id;
+
+  } catch (error) {
+    throw new Error('Error retrieving user');
   }
 };
 

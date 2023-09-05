@@ -5,16 +5,17 @@ import {
   getOneUser,
   updateUser,
   deleteUser,
+  getOneUserByMail,
+  getOneUserByMailParams,
 } from '../controllers/user.Controller';
 
-// toggleFavoritesMovies
 
 const userRoutes = Router();
 
 userRoutes
   .post('/', createUser)
   .get('/', getAllUsers)
-  .get('/:userId', getOneUser)
+  .get('/:userEmail', getOneUserByMailParams)
   .put('/:userId', updateUser)
   // .patch('/:userId/:movieId', toggleFavoritesMovies)
   .delete('/:userId', deleteUser);

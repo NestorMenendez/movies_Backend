@@ -7,6 +7,7 @@ import userRoutes from './routes/user.routes';
 import moviesRoutes from './routes/movies.routes';
 import genresRoutes from './routes/genres.routes';
 import { checkJwtMiddleware } from './middleware/checkJwt.middleware';
+import moviesPublicRoutes from './routes/moviesPUBLIC.routes';
 
 
 const app: express.Application = express();
@@ -20,9 +21,9 @@ app.use(fileUpload({
     tempFileDir: './uploads'
 }));
 
-app.use('/user', userRoutes);
+app.use('/moviesPublic', moviesPublicRoutes);
 app.use('/movies', moviesRoutes);
+app.use('/user', userRoutes);
 app.use('/genres', genresRoutes);
-
 
 export default app;
